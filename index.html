@@ -80,10 +80,23 @@ function buildBoardTable(month){
  const meta=[congregation.number?'N.º '+congregation.number:'',congregation.meetingTime?'Reunión: '+congregation.meetingTime:''].filter(Boolean).join(' · ');
  return `<div class="board-sheet"><h2>${esc(title)}</h2><div class="board-subtitle">${esc(subtitle)}</div>${meta?`<div class="board-meta">${esc(meta)}</div>`:''}<div class="board-month">${esc(monthName.charAt(0).toUpperCase()+monthName.slice(1))}</div>${dates.length?`<table class="board-grid"><thead><tr><th class="board-area board-head">Fecha/Servicio</th>${cols}<th class="no-print">Acciones</th></tr></thead><tbody>${body}</tbody></table>`:'<div class="empty">No hay fechas. Configura el día de reunión en Datos de la congregación.</div>'}</div>`;
 }
+function syncBoardMonthFromAssignments(month){
+ // Sincroniza las celdas del resumen con la programación real, sin borrar filas personalizadas.
+ const dates=getBoardDates(month);
+ const rows=ensureBoardRows(month);
+ rows.forEach(row=>{
+   if(!row.area)return;
+   row.cells=row.cells||{};
+   dates.forEach(date=>{
+     const names=assignments.filter(a=>a.date===date&&a.area===row.area&&String(a.people||'').trim()&&String(a.people).trim()!=='[object Event]').map(a=>String(a.people).trim());
+     row.cells[date]=names.join('\n');
+   });
+ });
+}
 function renderBoardPreview(){
  const month=$('boardPreviewMonth')?.value||new Date().toISOString().slice(0,7);
  if(!/^\d{4}-\d{2}$/.test(month))return;
- const dates=getBoardDates(month);renderBoardItemPicker(month);const done=assignments.filter(a=>(a.date||'').startsWith(month)&&String(a.people||'').trim()&&String(a.people).trim()!=='[object Event]');
+ const dates=getBoardDates(month);syncBoardMonthFromAssignments(month);renderBoardItemPicker(month);const done=assignments.filter(a=>(a.date||'').startsWith(month)&&String(a.people||'').trim()&&String(a.people).trim()!=='[object Event]');
  const brotherCount=done.reduce((n,a)=>n+String(a.people||'').split(',').map(x=>x.trim()).filter(Boolean).length,0);
  $('boardPreviewWrap').innerHTML=buildBoardTable(month);
  $('boardPreviewSummary').textContent=`${dates.length} reuniones · ${done.length} asignaciones realizadas · ${brotherCount} participaciones`;
