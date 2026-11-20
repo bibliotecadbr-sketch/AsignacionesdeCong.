@@ -190,3 +190,23 @@ load();
 #boardPreviewCard .board-grid textarea.board-edit-input:not(.board-edit-label){font-size:21px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;}
 #boardPreviewCard .board-grid th,#boardPreviewCard .board-grid td{white-space:normal;overflow-wrap:anywhere;}
 </style>
+
+<style>
+/* v27: aumento moderado de tipografía SOLO en la vista previa en pantalla.
+   La hoja de impresión mantiene sus propios tamaños adaptativos. */
+#boardPreviewCard .board-grid th,
+#boardPreviewCard .board-grid td { font-size:16px !important; line-height:1.35 !important; }
+#boardPreviewCard .board-grid .board-date,
+#boardPreviewCard .board-grid .board-date b { font-size:14px !important; line-height:1.25 !important; }
+#boardPreviewCard .board-grid .board-area { font-size:16px !important; }
+#boardPreviewCard .board-grid .board-group-row th,
+#boardPreviewCard .board-grid .board-group-row td { font-size:15px !important; }
+#boardPreviewCard .board-grid textarea.board-edit-input,
+#boardPreviewCard .board-grid input.board-edit-input { font-size:16px !important; line-height:1.35 !important; }
+#boardPreviewCard .preview-table th { font-size:15px !important; }
+#boardPreviewCard .preview-table td,
+#boardPreviewCard .preview-table .preview-area,
+#boardPreviewCard .preview-table input,
+#boardPreviewCard .preview-table textarea { font-size:16px !important; line-height:1.35 !important; }
+#boardPreviewCard .preview-table .preview-date { font-size:14px !important; }
+</style>
