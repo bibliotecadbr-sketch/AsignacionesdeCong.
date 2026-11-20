@@ -161,21 +161,58 @@ function printMonthlyBoard(){
  const printContainer=document.createElement('div');
  printContainer.innerHTML=buildBoardTable(month);
  printContainer.querySelectorAll('.no-print').forEach(el=>el.remove());
- // Convertir los campos editables en texto plano: los controles HTML no deben imprimirse.
  printContainer.querySelectorAll('input,textarea,select').forEach(control=>{
    const value=(control.value||control.textContent||'').trim();
    const text=document.createElement('span'); text.className='print-value'; text.textContent=value;
    control.replaceWith(text);
  });
  const dateCount=printContainer.querySelectorAll('.board-grid thead th.board-date').length;
- const printScale=dateCount>=10?'compact':dateCount>=7?'medium':'large';
  const sheet=printContainer.querySelector('.board-sheet');
- if(sheet){sheet.classList.add('print-'+printScale);sheet.style.setProperty('--date-count',String(Math.max(1,dateCount)));}
+ if(sheet)sheet.style.setProperty('--date-count',String(Math.max(1,dateCount)));
+ const meetingDayNames=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+ const meetingDay=congregation.meetingDay!==''?meetingDayNames[Number(congregation.meetingDay)]||'':' ';
+ const monthLabel=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+ const meetingInfo=[meetingDay?('Reunión: '+meetingDay):'',congregation.meetingTime?('Hora: '+congregation.meetingTime):''].filter(Boolean).join('  •  ');
  const html=printContainer.innerHTML;
- w.document.open();w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Cartelera</title><style>
- @page{size:A4 portrait;margin:7mm}*{box-sizing:border-box}body{font-family:Cambria,Georgia,serif;color:#111;margin:0}.board-sheet{width:100%;max-width:100%;}.board-sheet h2{text-align:center;font-size:18px;text-transform:uppercase;margin:0 0 3px}.board-subtitle{text-align:center;font-style:italic;font-size:10px;margin:0 auto 10px;max-width:700px}.board-meta{text-align:center;font:9px Arial,sans-serif;margin-bottom:5px}.board-month{text-align:center;font-weight:bold;font-size:11px;margin:4px 0}.board-grid{border-collapse:collapse;width:100%;table-layout:fixed}.board-grid th,.board-grid td{border:1px solid #222;padding:4px 2px;text-align:center;vertical-align:middle;font-size:9px;overflow-wrap:anywhere}.board-grid thead th{background:#e8e8e8}.board-grid .board-area{width:22%;text-align:left;font-weight:bold;background:#f4f4f4}.board-grid .board-group-row th,.board-grid .board-group-row td{background:#e8e8e8;font-weight:bold;height:22px}.board-grid .board-subarea{padding-left:16px;font-weight:normal;background:#fff}.board-grid .board-head{text-align:left}.board-grid .board-date{font-size:8px;background:#e8e8e8}.board-date span,.board-date b{display:block}.board-date b{font-size:11px}.board-grid td{height:29px;font-family:Arial,sans-serif;font-size:9px}.board-sheet{--cell-font:clamp(8px, calc(13px - var(--date-count)*.35px), 11px);--head-font:clamp(8px, calc(14px - var(--date-count)*.35px), 11px);--name-font:clamp(8px, calc(13px - var(--date-count)*.3px), 10px)}.board-sheet .board-grid th{font-size:var(--head-font)}.board-sheet .board-grid td{font-size:var(--cell-font)}.board-sheet .print-value{font-size:var(--name-font)}.board-sheet .board-date b{font-size:clamp(9px, calc(13px - var(--date-count)*.3px), 11px)}@media screen{.board-sheet .board-grid th,.board-sheet .board-grid td{font-size:clamp(9px, calc(15px - var(--date-count)*.35px), 12px)}.board-sheet .print-value{font-size:clamp(9px, calc(14px - var(--date-count)*.3px), 11px)}}.empty{padding:22px;text-align:center;font:14px Arial,sans-serif}@media print{.no-print{display:none!important}html,body{width:100%;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}.board-sheet{width:100%;page-break-inside:auto}.board-grid{width:100%;min-width:0;table-layout:fixed}.board-grid th,.board-grid td{overflow-wrap:anywhere;word-break:break-word}.board-grid .board-area{width:22%}.board-grid td{height:25px}.print-value{display:block;width:100%;white-space:pre-wrap;overflow-wrap:anywhere;font:9px Arial,sans-serif;color:#111;padding:2px}.board-grid tr{break-inside:avoid;page-break-inside:avoid}}
- @media(max-width:600px){.checks{grid-template-columns:1fr}}
-</style></head><body>${html}<script>window.onload=()=>window.print();<\\/script></body></html>`);w.document.close();
+ w.document.open();w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cartelera mensual - ${esc(congregation.name||'Congregación')}</title><style>
+ @page{size:A4 portrait;margin:10mm}
+ *{box-sizing:border-box}
+ :root{--ink:#172033;--muted:#526176;--line:#cbd5e1;--accent:#1e3a5f;--pale:#edf2f7}
+ html,body{margin:0;padding:0;background:#eef2f6;color:var(--ink);font-family:Arial,Helvetica,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body{padding:18px}
+ .print-toolbar{max-width:190mm;margin:0 auto 14px;display:flex;justify-content:flex-end;gap:8px}
+ .print-toolbar button{border:0;border-radius:7px;padding:10px 16px;background:#1e3a5f;color:white;font-weight:700;cursor:pointer}
+ .print-toolbar button.secondary{background:#e2e8f0;color:#172033}
+ .print-page{width:190mm;min-height:277mm;margin:0 auto;background:#fff;padding:10mm;box-shadow:0 4px 22px #0f172a1a}
+ .print-brandbar{height:7px;background:linear-gradient(90deg,#1e3a5f 0 72%,#b68a3a 72% 100%);margin:-10mm -10mm 8mm}
+ .print-kicker{text-transform:uppercase;letter-spacing:2px;font-size:8px;font-weight:800;color:#64748b;text-align:center;margin-bottom:4px}
+ .board-sheet{width:100%;max-width:100%;min-width:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+ .board-sheet h2{text-align:center;text-transform:uppercase;font-family:Georgia,serif;font-size:20px;line-height:1.2;letter-spacing:.5px;margin:0 0 4px;color:#172b45}
+ .board-subtitle{text-align:center;font-size:10px;color:#526176;margin:0 auto 8px;max-width:100%;font-style:normal}
+ .board-meta{text-align:center;font-size:9px;color:#526176;margin:0 0 7px}
+ .board-month{text-align:center;font-size:13px;font-weight:800;text-transform:capitalize;letter-spacing:1px;color:#1e3a5f;background:#edf2f7;border-top:1px solid #d7e0ea;border-bottom:1px solid #d7e0ea;padding:7px;margin:8px 0 10px}
+ .board-grid{border-collapse:collapse;width:100%;min-width:0;table-layout:fixed;border:1.5px solid #64748b}
+ .board-grid th,.board-grid td{border:1px solid #c5ced8;padding:5px 3px;text-align:center;vertical-align:middle;overflow-wrap:anywhere;word-break:normal}
+ .board-grid thead th{background:#e8eef5;color:#26384d;font-size:var(--head-font,8px);font-weight:800}
+ .board-grid .board-area{width:23%;text-align:left;font-weight:800;background:#f1f4f8;color:#25364b;padding-left:6px}
+ .board-grid .board-head{text-align:left}
+ .board-grid .board-subarea{padding-left:12px;font-weight:600;background:#fff}
+ .board-grid .board-group-row th,.board-grid .board-group-row td{background:#dfe7f0;color:#23364c;font-weight:800;height:19px;font-size:8px}
+ .board-date span,.board-date b{display:block}.board-date span{font-size:7px;font-weight:700;color:#526176;text-transform:uppercase}.board-date b{font-size:11px;color:#172b45;margin-top:2px}
+ .board-grid tbody td{height:31px;font-size:var(--cell-font,8px);font-family:Arial,sans-serif;color:#172033}
+ .board-grid tbody tr:nth-child(even):not(.board-group-row) td{background:#fbfcfd}
+ .board-grid tbody tr:nth-child(even):not(.board-group-row) th.board-area{background:#f5f7fa}
+ .print-value{display:block;width:100%;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;font-size:var(--name-font,8px);line-height:1.25;color:#172033;padding:1px}
+ .board-sheet{--cell-font:clamp(7px,calc(11px - var(--date-count)*.25px),9px);--head-font:clamp(7px,calc(10px - var(--date-count)*.2px),8px);--name-font:clamp(7px,calc(10px - var(--date-count)*.22px),9px)}
+ .print-footer{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #d8e0e8;margin-top:9mm;padding-top:4mm;color:#64748b;font-size:8px}
+ .print-footer strong{color:#334155}
+ .empty{padding:20px;text-align:center;font-size:12px;color:#64748b}
+ @media screen and (max-width:800px){body{padding:8px}.print-page{width:100%;min-height:0;padding:18px}.print-brandbar{margin:-18px -18px 16px}.board-grid th,.board-grid td{padding:3px 1px}}
+ @media print{html,body{background:#fff;padding:0}.print-toolbar{display:none!important}.print-page{width:auto;min-height:0;margin:0;padding:0;box-shadow:none}.print-brandbar{margin:0 0 7mm;height:6px}.board-grid{break-inside:auto;page-break-inside:auto}.board-grid tr{break-inside:avoid;page-break-inside:avoid}.board-grid th,.board-grid td{overflow-wrap:anywhere}.board-grid .board-area{width:23%}}
+ </style></head><body>
+ <div class="print-toolbar"><button class="secondary" onclick="window.close()">Cerrar</button><button onclick="window.print()">Imprimir cartelera</button></div>
+ <main class="print-page"><div class="print-brandbar"></div><div class="print-kicker">Programación mensual de servicios</div>${html}<div class="print-footer"><span><strong>${esc(congregation.name||'Congregación')}</strong>${congregation.number?' · N.º '+esc(congregation.number):''}</span><span>${esc(monthLabel)}${meetingInfo?' · '+esc(meetingInfo):''}</span></div></main>
+ <script>window.addEventListener('load',()=>{if(new URLSearchParams(location.search).has('autoprint'))window.print()});<\/script></body></html>`);w.document.close();
 }
 
 function closeModal(id){$(id).classList.remove('show')}
